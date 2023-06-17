@@ -11,7 +11,7 @@ Wrote this to verify Metrik tokens in our SDK. This is not a full implementation
 npm install @rbxts/jwt
 ```
 ### via Wally
-```bash
+```
 jwt = "metrik-tech/jwt@0.1.0"
 ```
 ### via `rbxm`/`rbxmx`
