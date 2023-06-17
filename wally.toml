@@ -1,0 +1,23 @@
+[package]
+name = "metrik-tech/jwt"
+version = "0.1.0"
+license = "AGPL-3.0-or-later"
+authors = ["cursecodes"]
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+exclude = ["*"]
+include = [
+        "include",
+        "include/**/*",
+        "out",
+        "out/**/*",
+        "LICENSE",
+        "README.md",
+        "default.project.json",
+        "node_modules",
+        "node_modules/@rbxts",
+        "node_modules/@rbxts/**/*",
+        "wally.toml",
+]
+
+

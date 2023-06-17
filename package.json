@@ -1,0 +1,51 @@
+{
+	"name": "@rbxts/jwt",
+	"version": "0.0.3",
+	"description": "JWT lib for Luau",
+	"main": "out/init.lua",
+	"scripts": {
+		"build": "rbxtsc --verbose",
+		"build:model": "rbxtsc --verbose --type=model",
+		"publish:wally": "npm run build:model && wally install && wally publish",
+		"eslint": "eslint src --max-warnings 0",
+		"eslint:fix": "eslint --fix src",
+		"prepublishOnly": "npm run build"
+	},
+	"keywords": [
+		"roblox",
+		"metrik",
+		"typescript",
+		"roblox-ts"
+	],
+	"author": "Metrik OSS <oss@metrik.app>",
+	"license": "AGPL-3.0-or-later",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/metrik-tech/jwt-luau.git"
+	},
+	"types": "out/index.d.ts",
+	"files": [
+		"out",
+		"!**/*.tsbuildinfo",
+		"README.md"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"devDependencies": {
+		"@rbxts/compiler-types": "2.1.0-types.1",
+		"@rbxts/testez": "^0.4.2-ts.0",
+		"@rbxts/types": "^1.0.687",
+		"@typescript-eslint/eslint-plugin": "^5.59.8",
+		"@typescript-eslint/parser": "^5.59.8",
+		"eslint": "^8.41.0",
+		"eslint-config-prettier": "^8.8.0",
+		"eslint-plugin-prettier": "^4.2.1",
+		"eslint-plugin-roblox-ts": "^0.0.35",
+		"prettier": "^2.8.8",
+		"typescript": "^4.9.5"
+	},
+	"dependencies": {
+		"@rbxts/services": "^1.5.1"
+	}
+}

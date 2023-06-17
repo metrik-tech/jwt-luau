@@ -1,0 +1,125 @@
+name: Release
+
+on: [workflow_dispatch]
+
+jobs:
+    gh-build:
+        name: Github Build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            - name: Install Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 19
+
+            - name: Install NPM dependencies
+              uses: pnpm/action-setup@v2
+              with:
+                  run_install: true
+                  version: 8
+
+            - name: Install roblox-ts
+              run: pnpm install -g roblox-ts
+
+            - name: Get NPM Version
+              id: package-version
+              uses: martinbeentjes/npm-get-version-action@master
+
+            - name: Compile
+              run: pnpm run build:model
+
+            - name: Install Foreman
+              uses: rojo-rbx/setup-foreman@v1
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Install Foreman Packages
+              run: foreman install
+
+            - name: Build for RBXMX
+              run: rojo build -o ./jwt-${{ steps.package-version.outputs.current-version }}.rbxmx
+
+            - name: Build for RBXM
+              run: rojo build -o ./jwt-${{ steps.package-version.outputs.current-version }}.rbxm
+
+            - name: Create Release
+              uses: actions/create-release@latest
+              id: create_release
+              with:
+                  release_name: ${{ steps.package-version.outputs.current-version }}
+                  tag_name: ${{ steps.package-version.outputs.current-version }}
+                  draft: false
+                  prerelease: false
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
+
+            - name: Upload rbxm file to release
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./jwt-${{ steps.package-version.outputs.current-version }}.rbxm
+                  asset_name: jwt-${{ steps.package-version.outputs.current-version }}.rbxm
+                  asset_content_type: form
+
+            - name: Upload rbxmx file to release
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./jwt-${{ steps.package-version.outputs.current-version }}.rbxmx
+                  asset_name: jwt-${{ steps.package-version.outputs.current-version }}.rbxmx
+                  asset_content_type: form
+    wally-build:
+        name: Wally Build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            - name: Install Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 19
+
+            - name: Install NPM dependencies
+              uses: pnpm/action-setup@v2
+              with:
+                  run_install: true
+                  version: 8
+
+            - name: Install roblox-ts
+              run: pnpm install -g roblox-ts
+
+            - name: Compile
+              run: pnpm run build:model
+
+            - name: Install Foreman
+              uses: rojo-rbx/setup-foreman@v1
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Install Wally
+              run: foreman install
+
+            - name: Prepare Wally Package Contents
+              run: |
+                  mkdir -p ~/temp/jwt
+                  cp -r ./* ~/temp/jwt/
+
+            - name: Log in to wally
+              env:
+                  WALLY_AUTH: ${{ secrets.WALLY_AUTH }}
+              run: |
+                  mkdir ~/.wally
+                  printenv WALLY_AUTH > ~/.wally/auth.toml
+
+            - name: Publish Wally Package
+              run: |
+                  wally publish --project-path ~/temp/jwt/ -v
+                  echo "All done!"
