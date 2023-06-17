@@ -12,47 +12,17 @@ const algsSign = {
 
 const algsVerify = {
 	HS256: (message: string, key: string, signature: string) =>
-		hash.hmac(hash.sha256, key, message, true) === signature,
+		base64urlEncode(hash.hmac(hash.sha256, key, message, true)) === signature,
 	HS384: (message: string, key: string, signature: string) =>
-		hash.hmac(hash.sha384, key, message, true) === signature,
+		base64urlEncode(hash.hmac(hash.sha384, key, message, true)) === signature,
 	HS512: (message: string, key: string, signature: string) =>
-		hash.hmac(hash.sha512, key, message, true) === signature,
+		base64urlEncode(hash.hmac(hash.sha512, key, message, true)) === signature,
 } as {
 	[key: string]: (message: string, key: string, signature: string) => boolean;
 };
 
 function base64urlEncode(str: string) {
-	return encode(str).gsub("+", "-")[0].gsub("/", "_")[0].gsub("=", "");
-}
-
-function base64urlDecode(str: string) {
-	const remainder = str.size() % 4;
-
-	if (remainder > 0) {
-		str = str + string.rep("=", 4 - remainder);
-	}
-
-	return decode(str.gsub("-", "+")[0].gsub("_", "/")[0].gsub("=", "")[0]);
-}
-
-function tokenize(str: string, div: string, len: number): string[] {
-	const result: string[] = [];
-	let pos = 0;
-
-	while (len > 1) {
-		const st = str.find(div, pos, true);
-		if (!st[0]) break;
-		const sp = st[0] + div.size() - 1;
-
-		result.push(str.sub(pos, st[0] - 1));
-		pos = sp + 1;
-
-		len = len - 1;
-	}
-
-	result.push(str.sub(pos));
-
-	return result;
+	return encode(str).gsub("+", "-")[0].gsub("/", "_")[0].gsub("=", "")[0];
 }
 
 function encodeJWT(data: unknown, key: string, alg: string | undefined = "HS256"): string {
@@ -73,7 +43,9 @@ function encodeJWT(data: unknown, key: string, alg: string | undefined = "HS256"
 	}
 
 	const header = { typ: "JWT", alg: alg };
-	const segments = [base64urlEncode(HttpService.JSONEncode(header)), base64urlEncode(HttpService.JSONEncode(data))];
+
+	const segments = [encode(HttpService.JSONEncode(header)), encode(HttpService.JSONEncode(data))];
+
 	const signingInput = segments.join(".");
 	const signature = base64urlEncode(algsSign[alg](signingInput, key));
 
@@ -89,7 +61,6 @@ function decodeJWT(
 ): {
 	header: { alg: string; typ: string };
 	body: { exp: number; iat: number; nbf: number; [key: string]: unknown };
-	signature: string;
 } {
 	if (!key) {
 		verify = false;
@@ -101,15 +72,11 @@ function decodeJWT(
 		error("data must be a string");
 	}
 
-	if (typeOf(key) !== "string" || !key) {
-		error("key must be a string");
-	}
-
 	if (typeOf(verify) !== "boolean") {
 		error("verify must be a boolean");
 	}
 
-	const segments = tokenize(data, ".", 3);
+	const segments = data.split(".");
 
 	if (segments.size() !== 3) {
 		error("not enough or too many segments");
@@ -117,18 +84,16 @@ function decodeJWT(
 
 	const headerSegment = segments[0];
 	const payloadSegment = segments[1];
-	const signatureSegment = segments[2];
 
 	const [success, payload] = pcall(() => {
 		return {
-			header: HttpService.JSONDecode(base64urlDecode(headerSegment)) as { alg: string; typ: string },
-			body: HttpService.JSONDecode(base64urlDecode(payloadSegment)) as {
+			header: HttpService.JSONDecode(decode(headerSegment)) as { alg: string; typ: string },
+			body: HttpService.JSONDecode(decode(payloadSegment)) as {
 				exp: number;
 				iat: number;
 				nbf: number;
 				[key: string]: unknown;
 			},
-			signature: base64urlDecode(signatureSegment),
 		};
 	});
 
@@ -136,7 +101,7 @@ function decodeJWT(
 		error("failed to decode JWT");
 	}
 
-	if (verify) {
+	if (verify && key) {
 		verifyJWT(data, key, true);
 	}
 
@@ -152,7 +117,7 @@ function verifyJWT(data: string, key: string, throwErrors: boolean | undefined =
 		error("key must be a string");
 	}
 
-	const segments = tokenize(data, ".", 3);
+	const segments = data.split(".");
 
 	if (segments.size() !== 3) {
 		if (throwErrors) error("not enough or too many segments");
@@ -164,8 +129,8 @@ function verifyJWT(data: string, key: string, throwErrors: boolean | undefined =
 	const payloadSegment = segments[1];
 	const signatureSegment = segments[2];
 
-	const header = HttpService.JSONDecode(base64urlDecode(headerSegment)) as { alg: string; typ: string };
-	const body = HttpService.JSONDecode(base64urlDecode(payloadSegment)) as { exp: number; iat: number; nbf: number };
+	const header = HttpService.JSONDecode(decode(headerSegment)) as { alg: string; typ: string };
+	const body = HttpService.JSONDecode(decode(payloadSegment)) as { exp: number; iat: number; nbf: number };
 
 	if (!header.typ || header.typ !== "JWT") {
 		if (throwErrors) error("typ must be JWT");
