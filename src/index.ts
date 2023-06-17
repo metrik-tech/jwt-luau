@@ -25,7 +25,7 @@ function base64urlEncode(str: string) {
 	return encode(str).gsub("+", "-")[0].gsub("/", "_")[0].gsub("=", "")[0];
 }
 
-function encodeJWT(data: unknown, key: string, alg: string | undefined = "HS256"): string {
+function encodeJWT(data: unknown, key: string, alg = "HS256"): string {
 	if (typeOf(data) !== "table" || !table) {
 		error("data must be a table");
 	}
@@ -56,8 +56,8 @@ function encodeJWT(data: unknown, key: string, alg: string | undefined = "HS256"
 
 function decodeJWT(
 	data: string,
-	key: string | undefined,
-	verify: boolean | undefined,
+	key?: string,
+	verify?: boolean,
 ): {
 	header: { alg: string; typ: string };
 	body: { exp: number; iat: number; nbf: number; [key: string]: unknown };
@@ -108,7 +108,7 @@ function decodeJWT(
 	return payload;
 }
 
-function verifyJWT(data: string, key: string, throwErrors: boolean | undefined = false): boolean {
+function verifyJWT(data: string, key: string, throwErrors = false): boolean {
 	if (typeOf(data) !== "string" || !data) {
 		error("data must be a string");
 	}
