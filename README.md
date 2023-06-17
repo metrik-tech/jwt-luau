@@ -12,7 +12,7 @@ npm install @rbxts/jwt
 ```
 ### via Wally
 ```
-jwt = "metrik-tech/jwt@0.1.0"
+jwt = "metrik-tech/jwt@0.2.0"
 ```
 ### via `rbxm`/`rbxmx`
 Download from Releases page. Latest release can be found [here](
