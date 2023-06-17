@@ -1,4 +1,4 @@
-# `jwt-luau`
+# `🔑 jwt-luau`
 
 LuaU/`roblox-ts` fork of [x25/luajwt](https://github.com/x25/luajwt) that works with Roblox. Currently only supports symmetric HS(256/384/512).
 
