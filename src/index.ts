@@ -230,7 +230,7 @@ function verifyJWT(data: string, key: string, throwErrors: boolean | undefined =
 	return true;
 }
 
-export default {
+export = {
 	sign: encodeJWT,
 	decode: decodeJWT,
 	verify: verifyJWT,
