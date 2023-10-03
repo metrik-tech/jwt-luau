@@ -29,7 +29,7 @@ import { decode, verify, sign } from "@rbxts/jwt";
 const jwt = sign({ foo: "bar", exp: 1893481200 }, "secret");
 
 // sign jwt with algorithm
-const hs483jwt = sign({ foo: "bar", exp: 1893481200 }, "secret", "HS384");
+const hs384jwt = sign({ foo: "bar", exp: 1893481200 }, "secret", "HS384");
 
 // verify jwt
 const isValid = verify(jwt, "secret");
